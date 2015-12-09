@@ -42,7 +42,6 @@ storageMapObject = (windowStorage={}) ->
         safeRemove jsonPrefix k
       storageMap.put toStore.k, toStore.v
     clear: -> storageMap.update {}
-    update: (contents) -> storageMap.update contents
     onAdd: storageMap.onAdd
     onRemove: storageMap.onRemove
     onChange: storageMap.onChange

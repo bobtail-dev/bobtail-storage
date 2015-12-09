@@ -83,9 +83,6 @@
       clear: function() {
         return storageMap.update({});
       },
-      update: function(contents) {
-        return storageMap.update(contents);
-      },
       onAdd: storageMap.onAdd,
       onRemove: storageMap.onRemove,
       onChange: storageMap.onChange
