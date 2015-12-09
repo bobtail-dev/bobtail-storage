@@ -37,14 +37,14 @@
       var k;
       k = testKey("addString");
       curRxStorage.setItem(k, "value");
-      assert.equal(curRxStorage.snapGetItem(k), "value");
+      assert.equal(curRxStorage.getItem(k), "value");
       return assert.equal(windowStorage[k], "value");
     });
     QUnit.test(storage + ".addJSON", function(assert) {
       var k;
       k = testKey("addJSON");
       curRxStorage.setItem(k, TEST_OBJECT);
-      assert.propEqual(curRxStorage.snapGetItem(k), TEST_OBJECT);
+      assert.propEqual(curRxStorage.getItem(k), TEST_OBJECT);
       return assert.equal(windowStorage.getItem(rxStorage.__jsonPrefix(k)), JSON.stringify(TEST_OBJECT));
     });
     QUnit.test(storage + ".clear", function(assert) {
@@ -54,8 +54,8 @@
       curRxStorage.setItem(k1, "str");
       curRxStorage.setItem(k2, TEST_OBJECT);
       curRxStorage.clear();
-      assert.strictEqual(curRxStorage.snapGetItem(k1), void 0);
-      assert.strictEqual(curRxStorage.snapGetItem(k2), void 0);
+      assert.strictEqual(curRxStorage.getItem(k1), void 0);
+      assert.strictEqual(curRxStorage.getItem(k2), void 0);
       return assert.propEqual(windowStorage, {});
     });
     QUnit.test(storage + ".removeString", function(assert) {
@@ -63,7 +63,7 @@
       k = testKey("clearString");
       curRxStorage.setItem(k, "str");
       curRxStorage.removeItem(k);
-      assert.strictEqual(curRxStorage.snapGetItem(k), void 0);
+      assert.strictEqual(curRxStorage.getItem(k), void 0);
       return assert.propEqual(windowStorage, {});
     });
     QUnit.test(storage + ".removeJSON", function(assert) {
@@ -71,41 +71,36 @@
       k = testKey("clearString");
       curRxStorage.setItem(k, TEST_OBJECT);
       curRxStorage.removeItem(k);
-      assert.strictEqual(curRxStorage.snapGetItem(k), void 0);
+      assert.strictEqual(curRxStorage.getItem(k), void 0);
       return assert.propEqual(windowStorage, {});
     });
     QUnit.test(storage + ".getMissingKey", function(assert) {
-      return assert.strictEqual(curRxStorage.snapGetItem("badkey"), void 0);
+      return assert.strictEqual(curRxStorage.getItem("badkey"), void 0);
     });
     QUnit.test(storage + ".bind", function(assert) {
-      var depCell, k;
+      var depCell, k, snapAssert;
       k = testKey("bind");
-      depCell = rx.bind(function() {
-        return curRxStorage.getItem(k);
-      });
+      depCell = curRxStorage.getItemBind(k);
+      snapAssert = function(func, val) {
+        return assert[func](rx.snap(function() {
+          return depCell.get();
+        }), val);
+      };
       assert.strictEqual(rx.snap(function() {
         return depCell.get();
       }), void 0);
       curRxStorage.setItem(k, "bindstring");
-      assert.equal(rx.snap(function() {
-        return depCell.get();
-      }), "bindstring");
+      snapAssert("equal", "bindstring");
       curRxStorage.setItem(k, TEST_OBJECT);
-      assert.deepEqual(rx.snap(function() {
-        return depCell.get();
-      }), TEST_OBJECT);
+      snapAssert("deepEqual", TEST_OBJECT);
       curRxStorage.setItem(k, TEST_ARRAY);
-      assert.deepEqual(rx.snap(function() {
-        return depCell.get();
-      }), TEST_ARRAY);
+      snapAssert("deepEqual", TEST_ARRAY);
       curRxStorage.setItem(k, "a new bind");
-      assert.equal(rx.snap(function() {
-        return depCell.get();
-      }), "a new bind");
+      snapAssert("equal", "a new bind");
       curRxStorage.removeItem(k);
-      return assert.strictEqual(rx.snap(function() {
-        return depCell.get();
-      }), void 0);
+      snapAssert("strictEqual", void 0);
+      curRxStorage.setItem(k, "a new bind");
+      return snapAssert("equal", "a new bind");
     });
     return QUnit.test(storage + ".collisions", function(assert) {
       var jsonK, k;
@@ -114,19 +109,19 @@
       curRxStorage.setItem(k, "bindstring");
       assert.strictEqual(windowStorage[jsonK], void 0);
       assert.equal(windowStorage[k], "bindstring");
-      assert.equal(curRxStorage.snapGetItem(k), "bindstring");
+      assert.equal(curRxStorage.getItem(k), "bindstring");
       curRxStorage.setItem(k, TEST_OBJECT);
       assert.strictEqual(windowStorage[k], void 0);
       assert.equal(windowStorage[jsonK], JSON.stringify(TEST_OBJECT));
-      assert.deepEqual(curRxStorage.snapGetItem(k), TEST_OBJECT);
+      assert.deepEqual(curRxStorage.getItem(k), TEST_OBJECT);
       curRxStorage.setItem(k, TEST_ARRAY);
       assert.strictEqual(windowStorage[k], void 0);
       assert.equal(windowStorage[jsonK], JSON.stringify(TEST_ARRAY));
-      assert.deepEqual(curRxStorage.snapGetItem(k), TEST_ARRAY);
+      assert.deepEqual(curRxStorage.getItem(k), TEST_ARRAY);
       curRxStorage.setItem(k, "a new bind");
       assert.strictEqual(windowStorage[jsonK], void 0);
       assert.equal(windowStorage[k], "a new bind");
-      return assert.equal(curRxStorage.snapGetItem(k), "a new bind");
+      return assert.equal(curRxStorage.getItem(k), "a new bind");
     });
   });
 
