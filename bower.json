@@ -1,0 +1,31 @@
+{
+  "name": "reactive-storage",
+  "authors": [
+    "Richard Mehlinger <rmehlinger@gmail.com>"
+  ],
+  "description": "A package integrating reactive-coffee with HTML5 session and local storage.",
+  "main": "main.coffee",
+  "moduleType": [],
+  "keywords": [
+    "storage",
+    "html5",
+    "sessionStorage",
+    "localStorage",
+    "reactive-coffee"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/rmehlinger",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "reactive-coffee": "~1.2.4"
+  },
+  "devDependencies": {
+    "qunit": "~1.20.0"
+  }
+}
