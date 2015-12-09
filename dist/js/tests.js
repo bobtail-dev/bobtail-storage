@@ -6,7 +6,7 @@
 
   testPrefix = "reactive__storage__test__";
 
-  storages = ["localStorage", "sessionStorage"];
+  storages = ["local", "session"];
 
   TEST_OBJECT = {
     name: "name",
@@ -31,7 +31,7 @@
       return "" + testPrefix + storage + "__" + k;
     };
     curRxStorage = rxStorage[storage];
-    windowStorage = window[storage];
+    windowStorage = window[storage + "Storage"];
     windowStorage.clear();
     QUnit.test(storage + ".addString", function(assert) {
       var k;

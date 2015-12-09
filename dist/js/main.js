@@ -95,9 +95,9 @@
     };
   };
 
-  window.rxStorage.localStorage = storageMapObject(window.localStorage);
+  window.rxStorage.local = storageMapObject(window.localStorage);
 
-  window.rxStorage.sessionStorage = storageMapObject(window.sessionStorage);
+  window.rxStorage.session = storageMapObject(window.sessionStorage);
 
 }).call(this);
 

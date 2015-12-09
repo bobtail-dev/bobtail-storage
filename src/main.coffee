@@ -51,5 +51,5 @@ storageMapObject = (windowStorage={}) ->
     onChange: storageMap.onChange
   }
 
-window.rxStorage.localStorage = storageMapObject window.localStorage
-window.rxStorage.sessionStorage = storageMapObject window.sessionStorage
+window.rxStorage.local = storageMapObject window.localStorage
+window.rxStorage.session = storageMapObject window.sessionStorage

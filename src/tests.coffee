@@ -2,7 +2,7 @@
 
 # used as a prefix on storage keys to ensure that QUnit tests do not accidentally overwrite any preexisting keys.
 testPrefix = "reactive__storage__test__"
-storages = ["localStorage", "sessionStorage"]
+storages = ["local", "session"]
 
 TEST_OBJECT = {name: "name", array: [1,2,3], object: {a: 'a', b: 'b'}}
 TEST_ARRAY = [1,2, [3,4, {name: 'name'}]]
@@ -10,7 +10,7 @@ TEST_ARRAY = [1,2, [3,4, {name: 'name'}]]
 storages.forEach (storage) ->
   testKey = (k) -> "#{testPrefix}#{storage}__#{k}"
   curRxStorage = rxStorage[storage]
-  windowStorage = window[storage]
+  windowStorage = window["#{storage}Storage"]
   windowStorage.clear()
 
   QUnit.test "#{storage}.addString", (assert) ->
