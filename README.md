@@ -18,14 +18,14 @@ The only difference is that, unlike with the web storage API, these methods work
 That is, you can store and retrieve arrays and objects, and reactive-storage will automatically handle serializing and
 deserializing for you.
 
-### `getItem(k)`
+### getItem(k)
 getItem is safe to call outside of a reactive bind context, as it wraps the underlying call in an
 `rx.snap`.
-### `setItem(k, v)`
-### `removeItem(k)`
-### `clear()`
+### setItem(k, v)
+### removeItem(k)
+### clear()
 
-### `getItemBind`
+### getItemBind
 This is the most important function in reactive-storage. Whereas getItem returns the value stored in `k`,
 getItemBind returns an `rx.DepCell` bound to the value stored in `k`. This means that if the value stored in k changes,
 the DepCell will automatically update.
