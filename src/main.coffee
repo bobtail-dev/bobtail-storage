@@ -4,15 +4,11 @@ window.rxStorage = {}
 # used to allow us to identify which keys have JSON values. Don't use this as a prefix to any of your keys.
 # Exported for testing purposes.
 __jsonPrefix = "__4511cb3d-d420-4a8c-8743-f12ef5e45c3e__reactive__storage__json__"
+
 jsonPrefix = window.rxStorage.__jsonPrefix = (k) -> "#{window.rxStorage.__jsonPrefix}#{k}"
 
-storageMapObject = (windowStorage={}) ->
-  storageMap = rx.map windowStorage
-
-  $(window).bind 'storage', (event) ->
-    if event.storageAreaArg == windowStorage
-      if event.key is null then windowStorage.update {}
-      else windowStorage.put event.key, event.newValueArg
+storageMapObject = (storageType) ->
+  storageMap = rx.map window["#{storageType}Storage"]
 
   rx.autoSub storageMap.onAdd, ([k, n]) -> window.localStorage.setItem k, n
   rx.autoSub storageMap.onChange, ([k, o, n]) -> window.localStorage.setItem k, n
@@ -23,14 +19,14 @@ storageMapObject = (windowStorage={}) ->
     map = rx.snap -> storageMap.all()
     if k of map then storageMap.remove k
 
-  getItem = (k) ->
+  _getItem = (k) ->
     jsonV = storageMap.get(jsonPrefix k)
     if jsonV? then JSON.parse jsonV
     else return storageMap.get k
 
   return {
-    getItem # This function must be called from within a bind context.
-    snapGetItem: (k) -> rx.snap -> getItem(k)
+    getItem: (k) -> rx.snap -> _getItem(k)
+    getItemBind: _.memoize (k) -> rx.bind -> _getItem(k)
     removeItem: (k) ->
       safeRemove k
       safeRemove jsonPrefix k
@@ -45,11 +41,12 @@ storageMapObject = (windowStorage={}) ->
         # and vice versa
         safeRemove jsonPrefix k
       storageMap.put toStore.k, toStore.v
-    clear: -> storageMap.update {}
+    clear: -> rx.transaction ->
+      storageMap.update {}
     onAdd: storageMap.onAdd
     onRemove: storageMap.onRemove
     onChange: storageMap.onChange
   }
 
-window.rxStorage.local = storageMapObject window.localStorage
-window.rxStorage.session = storageMapObject window.sessionStorage
+window.rxStorage.local = storageMapObject "local"
+window.rxStorage.session = storageMapObject "session"

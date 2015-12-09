@@ -12,21 +12,9 @@
     return "" + window.rxStorage.__jsonPrefix + k;
   };
 
-  storageMapObject = function(windowStorage) {
-    var getItem, safeRemove, storageMap;
-    if (windowStorage == null) {
-      windowStorage = {};
-    }
-    storageMap = rx.map(windowStorage);
-    $(window).bind('storage', function(event) {
-      if (event.storageAreaArg === windowStorage) {
-        if (event.key === null) {
-          return windowStorage.update({});
-        } else {
-          return windowStorage.put(event.key, event.newValueArg);
-        }
-      }
-    });
+  storageMapObject = function(storageType) {
+    var _getItem, safeRemove, storageMap;
+    storageMap = rx.map(window[storageType + "Storage"]);
     rx.autoSub(storageMap.onAdd, function(arg) {
       var k, n;
       k = arg[0], n = arg[1];
@@ -51,7 +39,7 @@
         return storageMap.remove(k);
       }
     };
-    getItem = function(k) {
+    _getItem = function(k) {
       var jsonV;
       jsonV = storageMap.get(jsonPrefix(k));
       if (jsonV != null) {
@@ -61,12 +49,16 @@
       }
     };
     return {
-      getItem: getItem,
-      snapGetItem: function(k) {
+      getItem: function(k) {
         return rx.snap(function() {
-          return getItem(k);
+          return _getItem(k);
         });
       },
+      getItemBind: _.memoize(function(k) {
+        return rx.bind(function() {
+          return _getItem(k);
+        });
+      }),
       removeItem: function(k) {
         safeRemove(k);
         return safeRemove(jsonPrefix(k));
@@ -87,7 +79,9 @@
         return storageMap.put(toStore.k, toStore.v);
       },
       clear: function() {
-        return storageMap.update({});
+        return rx.transaction(function() {
+          return storageMap.update({});
+        });
       },
       onAdd: storageMap.onAdd,
       onRemove: storageMap.onRemove,
@@ -95,9 +89,9 @@
     };
   };
 
-  window.rxStorage.local = storageMapObject(window.localStorage);
+  window.rxStorage.local = storageMapObject("local");
 
-  window.rxStorage.session = storageMapObject(window.sessionStorage);
+  window.rxStorage.session = storageMapObject("session");
 
 }).call(this);
 
