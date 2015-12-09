@@ -2,8 +2,9 @@
 window.rxStorage = {}
 
 # used to allow us to identify which keys have JSON values. Don't use this as a prefix to any of your keys.
-window.rxStorage.__jsonPrefix = "__4511cb3d-d420-4a8c-8743-f12ef5e45c3e__reactive__storage__json__"
-jsonPrefix = (k) -> "#{window.rxStorage.__jsonPrefix}#{k}"
+# Exported for testing purposes.
+__jsonPrefix = "__4511cb3d-d420-4a8c-8743-f12ef5e45c3e__reactive__storage__json__"
+jsonPrefix = window.rxStorage.__jsonPrefix = (k) -> "#{window.rxStorage.__jsonPrefix}#{k}"
 
 storageMapObject = (windowStorage={}) ->
   storageMap = rx.map windowStorage
@@ -22,11 +23,14 @@ storageMapObject = (windowStorage={}) ->
     map = rx.snap -> storageMap.all()
     if k of map then storageMap.remove k
 
+  getItem = (k) ->
+    jsonV = storageMap.get(jsonPrefix k)
+    if jsonV? then JSON.parse jsonV
+    else return storageMap.get k
+
   return {
-    getItem: (k) ->
-      jsonV = storageMap.get(jsonPrefix k)
-      if jsonV? then JSON.parse jsonV
-      else return storageMap.get k
+    getItem # This function must be called from within a bind context.
+    snapGetItem: (k) -> rx.snap -> getItem(k)
     removeItem: (k) ->
       safeRemove k
       safeRemove jsonPrefix k
