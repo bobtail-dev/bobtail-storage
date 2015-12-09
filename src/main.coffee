@@ -1,4 +1,4 @@
-_ = window._
+{rx, _} = window
 window.rxStorage = {}
 
 # used to allow us to identify which keys have JSON values. Don't use this as a prefix to any of your keys.
@@ -19,7 +19,7 @@ storageMapObject = (windowStorage={}) ->
 
   # necessary because SrcMap objects do not permit deleting nonexistent keys.
   safeRemove = (k) ->
-    map = rx.snap -> _.keys storageMap.all()
+    map = rx.snap -> storageMap.all()
     if k of map then storageMap.remove k
 
   return {
