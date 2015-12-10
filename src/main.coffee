@@ -58,7 +58,7 @@ storageMapObject = (storageType) ->
 
   return {
     getItem: (k) -> rx.snap -> _getItem(k)
-    getItemBind: _.memoize (k) -> rx.bind -> _getItem(k)
+    getItemBind: (k) -> rx.bind -> _getItem(k)
     removeItem: (k) -> rx.transaction -> _removeItem k
     setItem: (k, v) -> rx.transaction ->
       _removeItem k

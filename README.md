@@ -30,8 +30,6 @@ This is the most important function in reactive-storage. Whereas getItem returns
 getItemBind returns an `rx.DepCell` bound to the value stored in `k`. This means that if the value stored in k changes,
 the DepCell will automatically update.
 
-The function is memoized, so it always returns the same cell for a given key.
-
 ```
     userCell = window.rxStorage.session.getItemBind 'username'
     rx.autoSub userCell.onSet, ([o, n]) ->

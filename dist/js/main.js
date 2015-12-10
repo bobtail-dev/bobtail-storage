@@ -137,11 +137,11 @@
           return _getItem(k);
         });
       },
-      getItemBind: _.memoize(function(k) {
+      getItemBind: function(k) {
         return rx.bind(function() {
           return _getItem(k);
         });
-      }),
+      },
       removeItem: function(k) {
         return rx.transaction(function() {
           return _removeItem(k);
