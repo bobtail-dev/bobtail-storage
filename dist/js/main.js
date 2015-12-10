@@ -114,12 +114,16 @@
     rx.autoSub(storageMap.onAdd, function(arg) {
       var k, n;
       k = arg[0], n = arg[1];
-      return windowStorage.setItem(k, n);
+      if (windowStorage.getItem(k) !== n) {
+        return windowStorage.setItem(k, n);
+      }
     });
     rx.autoSub(storageMap.onChange, function(arg) {
       var k, n, o;
       k = arg[0], o = arg[1], n = arg[2];
-      return windowStorage.setItem(k, n);
+      if (windowStorage.getItem(k) !== n) {
+        return windowStorage.setItem(k, n);
+      }
     });
     rx.autoSub(storageMap.onRemove, function(arg) {
       var k, o;
@@ -169,9 +173,11 @@
         if (k !== __storageTypeKey) {
           return rx.transaction(function() {
             var type;
-            _removeItem(k);
-            type = getType(v);
-            return storageMap.put(type.prefixFunc(k), type.serialize(v));
+            if (_getItem(k) !== v) {
+              _removeItem(k);
+              type = getType(v);
+              return storageMap.put(type.prefixFunc(k), type.serialize(v));
+            }
           });
         }
       },

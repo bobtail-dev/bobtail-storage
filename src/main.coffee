@@ -49,8 +49,10 @@ storageMapObject = (storageType) ->
       if not originalEvent.key? then storageMap.update defaultState
       else storageMap.put originalEvent.key, originalEvent.newValue
 
-  rx.autoSub storageMap.onAdd, ([k, n]) -> windowStorage.setItem k, n
-  rx.autoSub storageMap.onChange, ([k, o, n]) -> windowStorage.setItem k, n
+  rx.autoSub storageMap.onAdd, ([k, n]) ->
+    if windowStorage.getItem(k) != n then windowStorage.setItem k, n
+  rx.autoSub storageMap.onChange, ([k, o, n]) ->
+    if windowStorage.getItem(k) != n then windowStorage.setItem k, n
   rx.autoSub storageMap.onRemove, ([k, o]) -> windowStorage.removeItem k
 
   # necessary because SrcMap objects do not permit deleting nonexistent keys.
@@ -73,9 +75,10 @@ storageMapObject = (storageType) ->
     getItemBind: (k) -> rx.bind -> _getItem(k)
     removeItem: (k) -> rx.transaction -> _removeItem k
     setItem: (k, v) -> if k != __storageTypeKey then rx.transaction ->
-      _removeItem k
-      type = getType v
-      storageMap.put type.prefixFunc(k), type.serialize(v)
+      if _getItem(k) != v
+        _removeItem k
+        type = getType v
+        storageMap.put type.prefixFunc(k), type.serialize(v)
     clear: -> storageMap.update defaultState
     onAdd: storageMap.onAdd
     onRemove: storageMap.onRemove
