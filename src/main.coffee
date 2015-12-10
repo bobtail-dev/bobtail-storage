@@ -2,8 +2,11 @@
 window.rxStorage = {}
 
 # used to allow us to identify which keys have JSON values. Don't use this as a prefix to any of your keys.
-# Exported for testing purposes.
 __prefix = "__4511cb3d-d420-4a8c-8743-f12ef5e45c3e__reactive__storage"
+
+# Exported for testing purposes.
+__storageTypeKey = window.rxStorage.__storageTypeKey = "#{__prefix}__type"
+
 __jsonPrefix = "#{__prefix}__json__"
 __boolPrefix = "#{__prefix}__bool__"
 __numberPrefix = "#{__prefix}__number__"
@@ -36,7 +39,15 @@ getType = (v) ->
 
 storageMapObject = (storageType) ->
   windowStorage = window["#{storageType}Storage"]
+  windowStorage[__storageTypeKey] = storageType
+  defaultState = {}
+  defaultState[__storageTypeKey] = storageType
   storageMap = rx.map windowStorage
+
+  $(window).bind 'storage', ({originalEvent}) ->
+    if originalEvent.storageArea[__storageTypeKey] == storageType
+      if not originalEvent.key? then storageMap.update defaultState
+      else storageMap.put originalEvent.key, originalEvent.newValue
 
   rx.autoSub storageMap.onAdd, ([k, n]) -> windowStorage.setItem k, n
   rx.autoSub storageMap.onChange, ([k, o, n]) -> windowStorage.setItem k, n
@@ -47,7 +58,8 @@ storageMapObject = (storageType) ->
     map = rx.snap -> storageMap.all()
     if k of map then storageMap.remove k
 
-  _removeItem = (k) -> prefixFuncs.forEach (func) -> safeRemove func k
+  _removeItem = (k) ->
+    if k != __storageTypeKey then prefixFuncs.forEach (func) -> safeRemove func k
 
   _getItem = (k) ->
     t = _.chain(types)
@@ -60,11 +72,11 @@ storageMapObject = (storageType) ->
     getItem: (k) -> rx.snap -> _getItem(k)
     getItemBind: (k) -> rx.bind -> _getItem(k)
     removeItem: (k) -> rx.transaction -> _removeItem k
-    setItem: (k, v) -> rx.transaction ->
+    setItem: (k, v) -> if k != __storageTypeKey then rx.transaction ->
       _removeItem k
       type = getType v
       storageMap.put type.prefixFunc(k), type.serialize(v)
-    clear: -> storageMap.update {}
+    clear: -> storageMap.update defaultState
     onAdd: storageMap.onAdd
     onRemove: storageMap.onRemove
     onChange: storageMap.onChange

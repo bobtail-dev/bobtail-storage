@@ -62,7 +62,8 @@ In addition, the storage objects expose the `onAdd`, `onRemove`, and `onChange` 
 ### Storage events
 
 The Web storage API [supports events](https://developer.mozilla.org/en-US/docs/Web/API/StorageEvent) for storage
-changes from other browser tabs. ***These events are not currently supported by reactive-storage.***
+changes from other browser tabs. reactive-bootstrap listens for storage events, and when one is received, it
+updates itself accordingly.
 
 ## Creator
 

@@ -12,9 +12,12 @@ TEST_ARRAY = [1,2, [3,4, {name: 'name'}]]
 
 storages.forEach (storage) ->
   testKey = (k) -> "#{testPrefix}#{storage}__#{k}"
-  curRxStorage = rxStorage[storage]
   windowStorage = window["#{storage}Storage"]
-  windowStorage.clear()
+  curRxStorage = rxStorage[storage]
+  curRxStorage.clear()
+
+  emptyState = {}
+  emptyState[window.rxStorage.__storageTypeKey] = storage
 
   QUnit.test "#{storage}.addString", (assert) ->
     k = testKey("addString")
@@ -65,21 +68,21 @@ storages.forEach (storage) ->
     curRxStorage.clear()
     assert.strictEqual(curRxStorage.getItem(k1), undefined)
     assert.strictEqual(curRxStorage.getItem(k2), undefined)
-    assert.propEqual windowStorage, {}
+    assert.propEqual windowStorage, emptyState
 
   QUnit.test "#{storage}.removeString", (assert) ->
-    k = testKey("clearString")
+    k = testKey("removeString")
     curRxStorage.setItem(k, "str")
     curRxStorage.removeItem(k)
     assert.strictEqual(curRxStorage.getItem(k), undefined)
-    assert.propEqual windowStorage, {}
+    assert.propEqual windowStorage, emptyState
 
   QUnit.test "#{storage}.removeJSON", (assert) ->
-    k = testKey("clearString")
+    k = testKey("removeJSON")
     curRxStorage.setItem(k, TEST_OBJECT)
     curRxStorage.removeItem(k)
     assert.strictEqual(curRxStorage.getItem(k), undefined)
-    assert.propEqual windowStorage, {}
+    assert.propEqual windowStorage, emptyState
 
   QUnit.test "#{storage}.getMissingKey", (assert) ->
     assert.strictEqual(curRxStorage.getItem(testKey "badkey"), undefined)

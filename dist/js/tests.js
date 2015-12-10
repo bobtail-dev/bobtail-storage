@@ -26,13 +26,15 @@
   ];
 
   storages.forEach(function(storage) {
-    var curRxStorage, testKey, windowStorage;
+    var curRxStorage, emptyState, testKey, windowStorage;
     testKey = function(k) {
       return "" + testPrefix + storage + "__" + k;
     };
-    curRxStorage = rxStorage[storage];
     windowStorage = window[storage + "Storage"];
-    windowStorage.clear();
+    curRxStorage = rxStorage[storage];
+    curRxStorage.clear();
+    emptyState = {};
+    emptyState[window.rxStorage.__storageTypeKey] = storage;
     QUnit.test(storage + ".addString", function(assert) {
       var k;
       k = testKey("addString");
@@ -86,23 +88,23 @@
       curRxStorage.clear();
       assert.strictEqual(curRxStorage.getItem(k1), void 0);
       assert.strictEqual(curRxStorage.getItem(k2), void 0);
-      return assert.propEqual(windowStorage, {});
+      return assert.propEqual(windowStorage, emptyState);
     });
     QUnit.test(storage + ".removeString", function(assert) {
       var k;
-      k = testKey("clearString");
+      k = testKey("removeString");
       curRxStorage.setItem(k, "str");
       curRxStorage.removeItem(k);
       assert.strictEqual(curRxStorage.getItem(k), void 0);
-      return assert.propEqual(windowStorage, {});
+      return assert.propEqual(windowStorage, emptyState);
     });
     QUnit.test(storage + ".removeJSON", function(assert) {
       var k;
-      k = testKey("clearString");
+      k = testKey("removeJSON");
       curRxStorage.setItem(k, TEST_OBJECT);
       curRxStorage.removeItem(k);
       assert.strictEqual(curRxStorage.getItem(k), void 0);
-      return assert.propEqual(windowStorage, {});
+      return assert.propEqual(windowStorage, emptyState);
     });
     QUnit.test(storage + ".getMissingKey", function(assert) {
       return assert.strictEqual(curRxStorage.getItem(testKey("badkey")), void 0);
