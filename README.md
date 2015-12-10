@@ -6,7 +6,7 @@ objects, `rxStorage.local` and `rxStorage.session`, which map to `window.localSt
 respectively. Under the hood, these are powered by two reactive
 [SrcMap objects](http://yang.github.io/reactive-coffee/api.html#rx-namespace).
 
-In addition, reactive-storage automatically serializes and deserializes JSON objects for storage and retrieval.
+In addition, reactive-storage automatically serializes and deserializes numbers, booleans, nulls, and JSON objects and arrays for storage and retrieval.
 
 ## Installation
 To install reactive-storage, simply run `bower install reactive-storage`.
