@@ -3,46 +3,68 @@ window.rxStorage = {}
 
 # used to allow us to identify which keys have JSON values. Don't use this as a prefix to any of your keys.
 # Exported for testing purposes.
-__jsonPrefix = "__4511cb3d-d420-4a8c-8743-f12ef5e45c3e__reactive__storage__json__"
+__prefix = "__4511cb3d-d420-4a8c-8743-f12ef5e45c3e__reactive__storage"
+__jsonPrefix = "#{__prefix}__json__"
+__boolPrefix = "#{__prefix}__bool__"
+__numberPrefix = "#{__prefix}__number__"
+__nullPrefix = "#{__prefix}__null__"
 
-jsonPrefix = window.rxStorage.__jsonPrefix = (k) -> "#{window.rxStorage.__jsonPrefix}#{k}"
+jsonPrefix = window.rxStorage.__jsonPrefix = (k) -> "#{__jsonPrefix}#{k}"
+boolPrefix = window.rxStorage.__boolPrefix = (k) -> "#{__boolPrefix}#{k}"
+numberPrefix = window.rxStorage.__numberPrefix = (k) -> "#{__numberPrefix}#{k}"
+nullPrefix = window.rxStorage.__nullPrefix = (k) -> "#{__nullPrefix}#{k}"
+
+types = {
+  string: {prefixFunc: _.identity, serialize: _.identity, deserialize: _.identity, name: 'string'}
+  number: {prefixFunc: numberPrefix, serialize: _.identity, deserialize: parseFloat, name: 'number'}
+  array: {prefixFunc: jsonPrefix, serialize: JSON.stringify, deserialize: JSON.parse, name: 'array'}
+  object: {prefixFunc: jsonPrefix, serialize: JSON.stringify, deserialize: JSON.parse, name: 'object'}
+  boolean: {
+    prefixFunc: boolPrefix
+    serialize: (v) -> if v then 1 else 0
+    deserialize: (v) -> not not parseInt v
+    name: 'boolean'
+  }
+  null: {prefixFunc: nullPrefix, serialize: _.identity, name: 'null', deserialize: -> null}
+}
+
+prefixFuncs = _.chain(types).values().pluck('prefixFunc').uniq().value()
+
+getType = (v) ->
+  if v is null then types.null
+  else types[typeof v]
 
 storageMapObject = (storageType) ->
-  storageMap = rx.map window["#{storageType}Storage"]
+  windowStorage = window["#{storageType}Storage"]
+  storageMap = rx.map windowStorage
 
-  rx.autoSub storageMap.onAdd, ([k, n]) -> window.localStorage.setItem k, n
-  rx.autoSub storageMap.onChange, ([k, o, n]) -> window.localStorage.setItem k, n
-  rx.autoSub storageMap.onRemove, ([k, o]) -> window.localStorage.removeItem k
+  rx.autoSub storageMap.onAdd, ([k, n]) -> windowStorage.setItem k, n
+  rx.autoSub storageMap.onChange, ([k, o, n]) -> windowStorage.setItem k, n
+  rx.autoSub storageMap.onRemove, ([k, o]) -> windowStorage.removeItem k
 
   # necessary because SrcMap objects do not permit deleting nonexistent keys.
   safeRemove = (k) ->
     map = rx.snap -> storageMap.all()
     if k of map then storageMap.remove k
 
+  _removeItem = (k) -> prefixFuncs.forEach (func) -> safeRemove func k
+
   _getItem = (k) ->
-    jsonV = storageMap.get(jsonPrefix k)
-    if jsonV? then JSON.parse jsonV
-    else return storageMap.get k
+    t = _.chain(types)
+         .values()
+         .find((v) -> storageMap.get(v.prefixFunc k))
+         .value()
+    t?.deserialize storageMap.get(t.prefixFunc k)
 
   return {
     getItem: (k) -> rx.snap -> _getItem(k)
     getItemBind: _.memoize (k) -> rx.bind -> _getItem(k)
-    removeItem: (k) ->
-      safeRemove k
-      safeRemove jsonPrefix k
-    setItem: (k, v) ->
-      toStore = {k, v}
-      if typeof v in ['array', 'object']
-        # If we stored a string in k, and then a JSON object in k, the JSON object should replace the string
-        safeRemove k
-        toStore.k = jsonPrefix k
-        toStore.v = JSON.stringify v
-      else
-        # and vice versa
-        safeRemove jsonPrefix k
-      storageMap.put toStore.k, toStore.v
-    clear: -> rx.transaction ->
-      storageMap.update {}
+    removeItem: (k) -> rx.transaction -> _removeItem k
+    setItem: (k, v) -> rx.transaction ->
+      _removeItem k
+      type = getType v
+      storageMap.put type.prefixFunc(k), type.serialize(v)
+    clear: -> storageMap.update {}
     onAdd: storageMap.onAdd
     onRemove: storageMap.onRemove
     onChange: storageMap.onChange
