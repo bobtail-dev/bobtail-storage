@@ -45,9 +45,10 @@ storageMapObject = (storageType) ->
   storageMap = rx.map windowStorage
 
   $(window).bind 'storage', ({originalEvent}) ->
-    if originalEvent.storageArea[__storageTypeKey] == storageType
-      if not originalEvent.key? then storageMap.update defaultState
-      else storageMap.put originalEvent.key, originalEvent.newValue
+    {key, newValue, oldValue, storageArea} = originalEvent
+    if storageArea[__storageTypeKey] == storageType
+      if not key? then storageMap.update defaultState
+      else if newValue != oldValue then storageMap.put key, newValue
 
   rx.autoSub storageMap.onAdd, ([k, n]) ->
     if windowStorage.getItem(k) != n then windowStorage.setItem k, n

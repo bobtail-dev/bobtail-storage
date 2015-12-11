@@ -101,13 +101,14 @@
     defaultState[__storageTypeKey] = storageType;
     storageMap = rx.map(windowStorage);
     $(window).bind('storage', function(arg) {
-      var originalEvent;
+      var key, newValue, oldValue, originalEvent, storageArea;
       originalEvent = arg.originalEvent;
-      if (originalEvent.storageArea[__storageTypeKey] === storageType) {
-        if (originalEvent.key == null) {
+      key = originalEvent.key, newValue = originalEvent.newValue, oldValue = originalEvent.oldValue, storageArea = originalEvent.storageArea;
+      if (storageArea[__storageTypeKey] === storageType) {
+        if (key == null) {
           return storageMap.update(defaultState);
-        } else {
-          return storageMap.put(originalEvent.key, originalEvent.newValue);
+        } else if (newValue !== oldValue) {
+          return storageMap.put(key, newValue);
         }
       }
     });
