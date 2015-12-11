@@ -100,18 +100,6 @@
     defaultState = {};
     defaultState[__storageTypeKey] = storageType;
     storageMap = rx.map(windowStorage);
-    $(window).bind('storage', function(arg) {
-      var key, newValue, oldValue, originalEvent, storageArea;
-      originalEvent = arg.originalEvent;
-      key = originalEvent.key, newValue = originalEvent.newValue, oldValue = originalEvent.oldValue, storageArea = originalEvent.storageArea;
-      if (storageArea[__storageTypeKey] === storageType) {
-        if (key == null) {
-          return storageMap.update(defaultState);
-        } else if (newValue !== oldValue) {
-          return storageMap.put(key, newValue);
-        }
-      }
-    });
     rx.autoSub(storageMap.onAdd, function(arg) {
       var k, n;
       k = arg[0], n = arg[1];

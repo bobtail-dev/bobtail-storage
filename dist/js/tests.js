@@ -138,7 +138,7 @@
       curRxStorage.setItem(k, "a new bind");
       return snapAssert("strictEqual", "a new bind");
     });
-    QUnit.test(storage + ".collisions", function(assert) {
+    return QUnit.test(storage + ".collisions", function(assert) {
       var jsonK, k;
       k = testKey("collisions");
       jsonK = rxStorage.__jsonPrefix(k);
@@ -158,22 +158,6 @@
       assert.strictEqual(windowStorage[jsonK], void 0);
       assert.strictEqual(windowStorage[k], "a new bind");
       return assert.strictEqual(curRxStorage.getItem(k), "a new bind");
-    });
-    return QUnit.test(storage + ".storageEvent", function(assert) {
-      var cell, event, key;
-      event = $.Event('storage');
-      key = testKey("storageEvent");
-      cell = curRxStorage.getItemBind(key);
-      event.originalEvent = {
-        storageArea: windowStorage,
-        key: key,
-        newValue: "42"
-      };
-      $(window).trigger(event);
-      assert.strictEqual(curRxStorage.getItem(key), "42");
-      return assert.strictEqual(rx.snap(function() {
-        return cell.get();
-      }), "42");
     });
   });
 

@@ -133,19 +133,3 @@ storages.forEach (storage) ->
     assert.strictEqual windowStorage[jsonK], undefined
     assert.strictEqual windowStorage[k], "a new bind"
     assert.strictEqual curRxStorage.getItem(k), "a new bind"
-
-  QUnit.test "#{storage}.storageEvent", (assert) ->
-    event = $.Event('storage')
-    key = testKey("storageEvent")
-
-    cell = curRxStorage.getItemBind key
-
-    event.originalEvent = {
-      storageArea: windowStorage
-      key
-      newValue: "42"
-    }
-    $(window).trigger(event)
-
-    assert.strictEqual curRxStorage.getItem(key), "42"
-    assert.strictEqual (rx.snap -> cell.get()), "42"
