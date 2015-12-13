@@ -24,8 +24,11 @@ types = {
   object: {prefixFunc: jsonPrefix, serialize: JSON.stringify, deserialize: JSON.parse, name: 'object'}
   boolean: {
     prefixFunc: boolPrefix
-    serialize: (v) -> if v then 1 else 0
-    deserialize: (v) -> not not parseInt v
+    serialize: (v) -> if v then "true" else "false"
+    deserialize: (v) ->
+      if v == 'true' then true
+      else if v == 'false' then false
+      else undefined
     name: 'boolean'
   }
   null: {prefixFunc: nullPrefix, serialize: _.identity, name: 'null', deserialize: -> null}

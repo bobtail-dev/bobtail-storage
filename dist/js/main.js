@@ -63,13 +63,19 @@
       prefixFunc: boolPrefix,
       serialize: function(v) {
         if (v) {
-          return 1;
+          return "true";
         } else {
-          return 0;
+          return "false";
         }
       },
       deserialize: function(v) {
-        return !!parseInt(v);
+        if (v === 'true') {
+          return true;
+        } else if (v === 'false') {
+          return false;
+        } else {
+          return void 0;
+        }
       },
       name: 'boolean'
     },
