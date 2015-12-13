@@ -39,22 +39,29 @@ getType = (v) ->
 
 storageMapObject = (storageType) ->
   windowStorage = window["#{storageType}Storage"]
-  windowStorage[__storageTypeKey] = storageType
-  defaultState = {}
-  defaultState[__storageTypeKey] = storageType
+  windowStorage[__storageTypeKey] ?= storageType
+  defaultState = ->
+    r = {}
+    r[__storageTypeKey] = storageType
+    r
   storageMap = rx.map windowStorage
 
-#  $(window).bind 'storage', ({originalEvent}) ->
-#    {key, newValue, oldValue, storageArea} = originalEvent
-#    if storageArea[__storageTypeKey] == storageType
-#      if not key? then storageMap.update defaultState
-#      else if newValue != oldValue then storageMap.put key, newValue
+  writeGuard = false # used to prevent multi-tab update loops.
+
+  window.addEventListener 'storage', ({key, newValue, oldValue, storageArea}) ->
+    if storageArea[__storageTypeKey] == storageType
+      if not key? then storageMap.update defaultState()
+      else if newValue != oldValue
+        writeGuard = true
+        storageMap.put key, newValue
+        writeGuard = false
 
   rx.autoSub storageMap.onAdd, ([k, n]) ->
-    if windowStorage.getItem(k) != n then windowStorage.setItem k, n
+    if not writeGuard and windowStorage.getItem(k) != n then windowStorage.setItem k, n
   rx.autoSub storageMap.onChange, ([k, o, n]) ->
-    if windowStorage.getItem(k) != n then windowStorage.setItem k, n
-  rx.autoSub storageMap.onRemove, ([k, o]) -> windowStorage.removeItem k
+    if not writeGuard and windowStorage.getItem(k) != n then windowStorage.setItem k, n
+  rx.autoSub storageMap.onRemove, ([k, o]) ->
+    windowStorage.removeItem k
 
   # necessary because SrcMap objects do not permit deleting nonexistent keys.
   safeRemove = (k) ->
@@ -62,7 +69,7 @@ storageMapObject = (storageType) ->
     if k of map then storageMap.remove k
 
   _removeItem = (k) ->
-    if k != __storageTypeKey then prefixFuncs.forEach (func) -> safeRemove func k
+    if k != __storageTypeKey then rx.transaction -> prefixFuncs.forEach (func) -> safeRemove func k
 
   _getItem = (k) ->
     t = _.chain(types)
@@ -71,16 +78,21 @@ storageMapObject = (storageType) ->
          .value()
     t?.deserialize storageMap.get(t.prefixFunc k)
 
+
+  _setItem = (k, v) ->
+    if k != __storageTypeKey then rx.transaction ->
+      o = _getItem(k)
+      if o != v
+        if typeof(o) != typeof(v) then safeRemove k
+        type = getType v
+        storageMap.put type.prefixFunc(k), type.serialize(v)
+
   return {
     getItem: (k) -> rx.snap -> _getItem(k)
     getItemBind: (k) -> rx.bind -> _getItem(k)
     removeItem: (k) -> rx.transaction -> _removeItem k
-    setItem: (k, v) -> if k != __storageTypeKey then rx.transaction ->
-      if _getItem(k) != v
-        _removeItem k
-        type = getType v
-        storageMap.put type.prefixFunc(k), type.serialize(v)
-    clear: -> storageMap.update defaultState
+    setItem: (k, v) -> _setItem(k, v)
+    clear: -> storageMap.update defaultState()
     onAdd: storageMap.onAdd
     onRemove: storageMap.onRemove
     onChange: storageMap.onChange
