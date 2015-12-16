@@ -111,7 +111,7 @@
       r[__storageTypeKey] = storageType;
       return r;
     };
-    storageMap = rx.map(windowStorage);
+    storageMap = rx.map(_.clone(windowStorage));
     writeGuard = false;
     window.addEventListener('storage', function(arg) {
       var key, newValue, oldValue, storageArea;

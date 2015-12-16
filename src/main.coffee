@@ -47,7 +47,7 @@ storageMapObject = (storageType) ->
     r = {}
     r[__storageTypeKey] = storageType
     r
-  storageMap = rx.map windowStorage
+  storageMap = rx.map _.clone windowStorage
 
   writeGuard = false # used to prevent multi-tab update loops.
 
