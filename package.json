@@ -1,0 +1,27 @@
+{
+  "name": "reactive-storage",
+  "version": "0.2.0",
+  "description": "A package integrating reactive-coffee with HTML5 session and local storage.",
+  "main": "main.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rmehlinger/reactive-storage.git"
+  },
+  "keywords": [
+    "reactive-coffee",
+    "html5",
+    "storage"
+  ],
+  "author": "Richard Mehlinger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rmehlinger/reactive-storage/issues"
+  },
+  "homepage": "https://github.com/rmehlinger/reactive-storage"
+}
