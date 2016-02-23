@@ -52,27 +52,28 @@ storageMapObject = (storageType) ->
   writeGuard = false # used to prevent multi-tab update loops.
 
   window.addEventListener 'storage', ({key, newValue, oldValue, storageArea}) ->
-    if storageArea[__storageTypeKey] == storageType
-      if not key? then storageMap.update defaultState()
-      else if newValue != oldValue
-        writeGuard = true
-        storageMap.put key, newValue
-        writeGuard = false
+    if not key?
+      storageMap.update defaultState()
+    else if storageArea[__storageTypeKey] == storageType and newValue != oldValue
+      writeGuard = true
+      storageMap.put key, newValue
+      writeGuard = false
 
-  rx.autoSub storageMap.onAdd, ([k, n]) ->
-    if not writeGuard and windowStorage.getItem(k) != n then windowStorage.setItem k, n
-  rx.autoSub storageMap.onChange, ([k, o, n]) ->
-    if not writeGuard and windowStorage.getItem(k) != n then windowStorage.setItem k, n
-  rx.autoSub storageMap.onRemove, ([k, o]) ->
-    windowStorage.removeItem k
+  rx.autoSub storageMap.onAdd, (dict) ->
+    if not writeGuard then _.pairs(dict).forEach ([k, n]) -> windowStorage.setItem k, n
+  rx.autoSub storageMap.onChange, (dict) ->
+    if not writeGuard then _.pairs(dict).forEach ([k, [o, n]]) -> windowStorage.setItem k, n
+  rx.autoSub storageMap.onRemove, (dict) ->
+    _.keys(dict).forEach (k) -> windowStorage.removeItem k
 
   # necessary because SrcMap objects do not permit deleting nonexistent keys.
-  safeRemove = (k) ->
+  _safeRemove = (k) ->
     map = rx.snap -> storageMap.all()
     if k of map then storageMap.remove k
 
   _removeItem = (k) ->
-    if k != __storageTypeKey then rx.transaction -> prefixFuncs.forEach (func) -> safeRemove func k
+    if k != __storageTypeKey then rx.transaction ->
+      prefixFuncs.forEach (func) -> _safeRemove func k
 
   _getItem = (k) ->
     t = _.chain(types)
@@ -86,7 +87,7 @@ storageMapObject = (storageType) ->
     if k != __storageTypeKey then rx.transaction ->
       o = _getItem(k)
       if o != v
-        if typeof(o) != typeof(v) then safeRemove k
+        if typeof(o) != typeof(v) then _removeItem k
         type = getType v
         storageMap.put type.prefixFunc(k), type.serialize(v)
 
@@ -103,3 +104,6 @@ storageMapObject = (storageType) ->
 
 window.rxStorage.local = storageMapObject "local"
 window.rxStorage.session = storageMapObject "session"
+
+window.localStorage.clear = -> console.error "Manually clearing localStorage will cause the local storage map object to break. Use rxStorage.local.clear() instead."
+window.sessionStorage.clear = -> console.error "Manually clearing localStorage will cause the local storage map object to break. Use rxStorage.local.clear() instead."
