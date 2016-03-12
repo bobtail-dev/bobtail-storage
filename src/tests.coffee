@@ -7,9 +7,13 @@ storages = ["local", "session"]
 TEST_OBJECT = {name: "name", array: [1,2,3], object: {a: 'a', b: 'b'}}
 TEST_ARRAY = [1,2, [3,4, {name: 'name'}]]
 
-# fun fact: window.*storage.getItem('foo') returns null if foo is a nonexistent key, whereas
-# window.*storage.foo returns undefined.
+# fun fact: by default QUnit stores information about failing tests in... browser sessionStorage.
+# so we have to turn that feature off.
 
+QUnit.config.reorder = false
+
+# fun fact the second: window.*storage.getItem('foo') returns null if foo is a nonexistent key, whereas
+# window.*storage.foo returns undefined.
 storages.forEach (storage) ->
   testKey = (k) -> "#{testPrefix}#{storage}__#{k}"
   windowStorage = window["#{storage}Storage"]
@@ -19,6 +23,9 @@ storages.forEach (storage) ->
   emptyState = {}
   emptyState[window.rxStorage.__storageTypeKey] = storage
 
+  QUnit.module(storage, {
+    afterEach: -> curRxStorage.clear()
+  })
   QUnit.test "#{storage}.addString", (assert) ->
     k = testKey("addString")
     curRxStorage.setItem(k, "value")

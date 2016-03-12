@@ -81,9 +81,12 @@
     },
     "null": {
       prefixFunc: nullPrefix,
-      serialize: _.identity,
+      serialize: (function() {
+        return 'null';
+      }),
       name: 'null',
       deserialize: function() {
+        console.log('null!');
         return null;
       }
     }
@@ -175,13 +178,16 @@
     _setItem = function(k, v) {
       if (k !== __storageTypeKey) {
         return rx.transaction(function() {
-          var o, type;
+          var o, ref, type;
           o = _getItem(k);
           if (o !== v) {
-            if (typeof o !== typeof v) {
+            if (o === void 0 || getType(o).name !== ((ref = getType(v)) != null ? ref.name : void 0)) {
               _removeItem(k);
             }
             type = getType(v);
+            if (v === null) {
+              console.log(type.prefixFunc(k), type.serialize(v));
+            }
             return storageMap.put(type.prefixFunc(k), type.serialize(v));
           }
         });
@@ -209,6 +215,9 @@
       clear: function() {
         return storageMap.update(defaultState());
       },
+      all: function() {
+        return storageMap.all();
+      },
       onAdd: storageMap.onAdd,
       onRemove: storageMap.onRemove,
       onChange: storageMap.onChange
@@ -218,14 +227,6 @@
   window.rxStorage.local = storageMapObject("local");
 
   window.rxStorage.session = storageMapObject("session");
-
-  window.localStorage.clear = function() {
-    return console.error("Manually clearing localStorage will cause the local storage map object to break. Use rxStorage.local.clear() instead.");
-  };
-
-  window.sessionStorage.clear = function() {
-    return console.error("Manually clearing localStorage will cause the local storage map object to break. Use rxStorage.local.clear() instead.");
-  };
 
 }).call(this);
 

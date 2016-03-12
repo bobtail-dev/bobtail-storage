@@ -31,7 +31,10 @@ types = {
       else undefined
     name: 'boolean'
   }
-  null: {prefixFunc: nullPrefix, serialize: _.identity, name: 'null', deserialize: -> null}
+  null: {prefixFunc: nullPrefix, serialize: (-> 'null'), name: 'null', deserialize: ->
+    console.log 'null!'
+    null
+  }
 }
 
 prefixFuncs = _.chain(types).values().pluck('prefixFunc').uniq().value()
@@ -78,7 +81,7 @@ storageMapObject = (storageType) ->
   _getItem = (k) ->
     t = _.chain(types)
          .values()
-         .find((v) -> storageMap.get(v.prefixFunc k))
+         .find (v) -> storageMap.get(v.prefixFunc k)
          .value()
     t?.deserialize storageMap.get(t.prefixFunc k)
 
@@ -87,8 +90,9 @@ storageMapObject = (storageType) ->
     if k != __storageTypeKey then rx.transaction ->
       o = _getItem(k)
       if o != v
-        if typeof(o) != typeof(v) then _removeItem k
+        if o is undefined or getType(o).name != getType(v)?.name then _removeItem k
         type = getType v
+        if v is null then console.log type.prefixFunc(k), type.serialize(v)
         storageMap.put type.prefixFunc(k), type.serialize(v)
 
   return {
@@ -96,7 +100,9 @@ storageMapObject = (storageType) ->
     getItemBind: (k) -> rx.bind -> _getItem(k)
     removeItem: (k) -> rx.transaction -> _removeItem k
     setItem: (k, v) -> _setItem(k, v)
-    clear: -> storageMap.update defaultState()
+    clear: ->
+      storageMap.update defaultState()
+    all: -> storageMap.all()
     onAdd: storageMap.onAdd
     onRemove: storageMap.onRemove
     onChange: storageMap.onChange
@@ -104,6 +110,3 @@ storageMapObject = (storageType) ->
 
 window.rxStorage.local = storageMapObject "local"
 window.rxStorage.session = storageMapObject "session"
-
-window.localStorage.clear = -> console.error "Manually clearing localStorage will cause the local storage map object to break. Use rxStorage.local.clear() instead."
-window.sessionStorage.clear = -> console.error "Manually clearing localStorage will cause the local storage map object to break. Use rxStorage.local.clear() instead."

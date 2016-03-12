@@ -25,6 +25,8 @@
     ]
   ];
 
+  QUnit.config.reorder = false;
+
   storages.forEach(function(storage) {
     var curRxStorage, emptyState, testKey, windowStorage;
     testKey = function(k) {
@@ -35,6 +37,11 @@
     curRxStorage.clear();
     emptyState = {};
     emptyState[window.rxStorage.__storageTypeKey] = storage;
+    QUnit.module(storage, {
+      afterEach: function() {
+        return curRxStorage.clear();
+      }
+    });
     QUnit.test(storage + ".addString", function(assert) {
       var k;
       k = testKey("addString");

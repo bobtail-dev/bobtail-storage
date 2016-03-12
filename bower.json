@@ -23,7 +23,7 @@
     "tests"
   ],
   "dependencies": {
-    "reactive-coffee": "https://github.com/rmehlinger/reactive-coffee.git#308ca8e227060a4dcceb72f620b9243b0cc1b4a2"
+    "reactive-coffee": "git://github.com/yang/reactive-coffee/#24639dfc06f6dfe73ec2b30ed03dcf3449ebbc24"
   },
   "devDependencies": {
     "qunit": "~1.20.0"
