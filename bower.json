@@ -1,5 +1,6 @@
 {
-  "name": "reactive-storage",
+  "name": "bobtail-storage",
+  "version": "0.4.0",
   "authors": [
     "Richard Mehlinger <rmehlinger@gmail.com>"
   ],
@@ -23,7 +24,7 @@
     "tests"
   ],
   "dependencies": {
-    "reactive-coffee": ">=1.3.0"
+    "bobtail": "1.3.3"
   },
   "devDependencies": {
     "qunit": "~1.20.0"

@@ -1,5 +1,5 @@
 {
-  "name": "reactive-storage",
+  "name": "bobtail-storage",
   "version": "0.2.0",
   "description": "A package integrating reactive-coffee with HTML5 session and local storage.",
   "main": "main.js",
@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/rmehlinger/reactive-storage/issues"
   },
-  "homepage": "https://github.com/rmehlinger/reactive-storage"
+  "homepage": "https://github.com/rmehlinger/reactive-storage",
+  "dependencies": {
+    "bobtail": "^1.3.3"
+  }
 }
