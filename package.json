@@ -25,6 +25,6 @@
   },
   "homepage": "https://github.com/rmehlinger/reactive-storage",
   "dependencies": {
-    "bobtail": "^1.4.2"
+    "bobtail": ">=1.7.0"
   }
 }
