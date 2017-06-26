@@ -16,7 +16,8 @@
   "keywords": [
     "reactive-coffee",
     "html5",
-    "storage"
+    "storage",
+    "bobtail"
   ],
   "author": "Richard Mehlinger",
   "license": "MIT",
@@ -25,6 +26,7 @@
   },
   "homepage": "https://github.com/rmehlinger/reactive-storage",
   "dependencies": {
-    "bobtail": ">=1.7.0"
+    "bobtail": ">=1.7.0",
+    "underscore": "^1.8.3"
   }
 }

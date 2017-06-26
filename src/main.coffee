@@ -1,21 +1,18 @@
-{rx, _} = window
-window.rxStorage = {}
-
 # used to allow us to identify which keys have JSON values. Don't use this as a prefix to any of your keys.
 __prefix = "__4511cb3d-d420-4a8c-8743-f12ef5e45c3e__reactive__storage"
 
 # Exported for testing purposes.
-__storageTypeKey = window.rxStorage.__storageTypeKey = "#{__prefix}__type"
+__storageTypeKey = "#{__prefix}__type"
 
 __jsonPrefix = "#{__prefix}__json__"
 __boolPrefix = "#{__prefix}__bool__"
 __numberPrefix = "#{__prefix}__number__"
 __nullPrefix = "#{__prefix}__null__"
 
-jsonPrefix = window.rxStorage.__jsonPrefix = (k) -> "#{__jsonPrefix}#{k}"
-boolPrefix = window.rxStorage.__boolPrefix = (k) -> "#{__boolPrefix}#{k}"
-numberPrefix = window.rxStorage.__numberPrefix = (k) -> "#{__numberPrefix}#{k}"
-nullPrefix = window.rxStorage.__nullPrefix = (k) -> "#{__nullPrefix}#{k}"
+jsonPrefix = (k) -> "#{__jsonPrefix}#{k}"
+boolPrefix = (k) -> "#{__boolPrefix}#{k}"
+numberPrefix = (k) -> "#{__numberPrefix}#{k}"
+nullPrefix = (k) -> "#{__nullPrefix}#{k}"
 
 types = {
   string: {prefixFunc: _.identity, serialize: _.identity, deserialize: _.identity, name: 'string'}
@@ -43,7 +40,7 @@ getType = (v) ->
   if v is null then types.null
   else types[typeof v]
 
-storageMapObject = (storageType) ->
+storageMapObject = (storageType, _, rx) ->
   windowStorage = window["#{storageType}Storage"]
   windowStorage[__storageTypeKey] ?= storageType
   defaultState = -> new Map [[__storageTypeKey, storageType]]
@@ -103,5 +100,28 @@ storageMapObject = (storageType) ->
     onChange: storageMap.onChange
   }
 
-window.rxStorage.local = storageMapObject "local"
-window.rxStorage.session = storageMapObject "session"
+factory = (_, rx) -> {
+  __storageTypeKey
+  __jsonPrefix: jsonPrefix
+  __boolPrefix: boolPrefix
+  __numberPrefix: numberPrefix
+  __nullPrefix: nullPrefix
+  local: storageMapObject "local", _, rx
+  session: storageMapObject "session", _, rx
+}
+
+
+do(root = this) ->
+  deps = ['underscore', 'bobtail']
+
+  if define?.amd?
+    define deps, factory
+  else if module?.exports?
+    _ = require 'underscore'
+    rx = require 'bobtail'
+    module.exports = factory _, rx
+  else if root._? and root.rx?
+    {_, rx} = root
+    root.rxStorage = factory _, rx
+  else
+    throw "Dependencies are not met for reactive: _ and $ not found"
