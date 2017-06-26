@@ -1,6 +1,6 @@
 {
   "name": "bobtail-storage",
-  "version": "0.4.2",
+  "version": "1.0.0",
   "description": "A package integrating reactive-coffee with HTML5 session and local storage.",
   "main": "main.js",
   "directories": {
