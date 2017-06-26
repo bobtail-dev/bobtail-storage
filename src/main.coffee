@@ -46,11 +46,8 @@ getType = (v) ->
 storageMapObject = (storageType) ->
   windowStorage = window["#{storageType}Storage"]
   windowStorage[__storageTypeKey] ?= storageType
-  defaultState = ->
-    r = {}
-    r[__storageTypeKey] = storageType
-    r
-  storageMap = rx.map _.clone windowStorage
+  defaultState = -> new Map [[__storageTypeKey, storageType]]
+  storageMap = rx.map _.pairs windowStorage
 
   writeGuard = false # used to prevent multi-tab update loops.
 
@@ -63,16 +60,15 @@ storageMapObject = (storageType) ->
       writeGuard = false
 
   rx.autoSub storageMap.onAdd, (dict) ->
-    if not writeGuard then _.pairs(dict).forEach ([k, n]) -> windowStorage.setItem k, n
+    if not writeGuard then dict.forEach (n, k) -> windowStorage.setItem k, n
   rx.autoSub storageMap.onChange, (dict) ->
-    if not writeGuard then _.pairs(dict).forEach ([k, [o, n]]) -> windowStorage.setItem k, n
+    if not writeGuard then dict.forEach ([o, n], k) -> windowStorage.setItem k, n
   rx.autoSub storageMap.onRemove, (dict) ->
-    _.keys(dict).forEach (k) -> windowStorage.removeItem k
+    dict.forEach (v, k) -> windowStorage.removeItem k
 
   # necessary because SrcMap objects do not permit deleting nonexistent keys.
   _safeRemove = (k) ->
-    map = rx.snap -> storageMap.all()
-    if k of map then storageMap.remove k
+    if (rx.snap -> storageMap.has k) then storageMap.remove k
 
   _removeItem = (k) ->
     if k != __storageTypeKey then rx.transaction ->
@@ -92,7 +88,6 @@ storageMapObject = (storageType) ->
       if o != v
         if o is undefined or getType(o).name != getType(v)?.name then _removeItem k
         type = getType v
-        if v is null then console.log type.prefixFunc(k), type.serialize(v)
         storageMap.put type.prefixFunc(k), type.serialize(v)
 
   return {
